@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Build Anything — From Game Worlds to the Real World</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#03050C; --surface:#0B101E; --surface-2:#0F1626; --highlight:#151E32;
+  --primary:#38BDF8; --secondary:#A78BFA; --accent:#FBBF24; --silver:#CBD5E1;
+  --rose:#FB7185; --emerald:#34D399; --text:#F9FAFB; --muted:#94A3B8; --dim:#64748B;
+  --border:#1F2937; --border-2:#334155;
+  --gradient:linear-gradient(135deg,#38BDF8 0%,#A78BFA 55%,#FBBF24 100%);
+  --gradient-cool:linear-gradient(135deg,#38BDF8 0%,#A78BFA 100%);
+  --gradient-warm:linear-gradient(135deg,#FBBF24 0%,#FB7185 100%);
+  --gradient-green:linear-gradient(135deg,#34D399 0%,#38BDF8 100%);
+  --easing:cubic-bezier(0.2,0.8,0.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);color:var(--text);
+  font-family:'Inter',-apple-system,sans-serif;overflow:hidden;
+  -webkit-font-smoothing:antialiased;letter-spacing:-0.01em;}
+a{color:inherit;text-decoration:none;}
+
+.deck{position:relative;width:100vw;height:100vh;overflow:hidden;}
+.slide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  padding:7vh 7vw;opacity:0;pointer-events:none;transform:translateY(26px) scale(0.99);
+  transition:opacity 560ms var(--easing),transform 640ms var(--easing);overflow:hidden;}
+.slide.active{opacity:1;pointer-events:auto;transform:none;}
+.slide-inner{width:100%;max-width:1240px;position:relative;z-index:2;}
+
+.atmosphere{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 50% at 18% 8%,rgba(56,189,248,0.20) 0%,transparent 60%),
+    radial-gradient(ellipse 60% 50% at 82% 92%,rgba(167,139,250,0.20) 0%,transparent 60%),
+    radial-gradient(ellipse 42% 32% at 50% 50%,rgba(251,191,36,0.07) 0%,transparent 70%);}
+.grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.035;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode:overlay;}
+
+h1,h2,h3,h4{font-family:'Outfit',sans-serif;letter-spacing:-0.03em;font-weight:800;line-height:1.04;}
+.mono{font-family:'JetBrains Mono',monospace;}
+.gradient-text{background:var(--gradient);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;}
+.cool-text{background:var(--gradient-cool);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;}
+.warm-text{background:var(--gradient-warm);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;}
+.green-text{background:var(--gradient-green);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;}
+
+.kicker{display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;
+  font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);
+  padding:7px 15px;border:1px solid var(--border);border-radius:100px;background:rgba(255,255,255,0.02);
+  backdrop-filter:blur(10px);margin-bottom:26px;}
+.kicker::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--primary);box-shadow:0 0 10px var(--primary);}
+
+.title-xxl{font-size:clamp(52px,8.5vw,120px);font-weight:900;letter-spacing:-0.045em;}
+.title-xl{font-size:clamp(42px,6.4vw,88px);}
+.title-l{font-size:clamp(32px,4.6vw,60px);}
+.title-m{font-size:clamp(26px,3.2vw,42px);}
+.title-s{font-size:clamp(21px,2.4vw,32px);}
+.body-lg{font-size:clamp(17px,1.5vw,22px);color:var(--muted);line-height:1.55;max-width:860px;}
+.body-md{font-size:clamp(15px,1.15vw,17px);color:var(--muted);line-height:1.6;}
+.big-emoji{font-size:clamp(40px,5vw,68px);line-height:1;}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s var(--easing),transform .7s var(--easing);}
+.slide.active .reveal{opacity:1;transform:none;}
+.slide.active .reveal.d1{transition-delay:.10s}.slide.active .reveal.d2{transition-delay:.20s}
+.slide.active .reveal.d3{transition-delay:.32s}.slide.active .reveal.d4{transition-delay:.44s}
+.slide.active .reveal.d5{transition-delay:.56s}.slide.active .reveal.d6{transition-delay:.68s}
+.slide.active .reveal.d7{transition-delay:.80s}.slide.active .reveal.d8{transition-delay:.92s}
+
+/* top nav */
+.deck-nav{position:fixed;top:20px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:0 30px;z-index:100;pointer-events:none;}
+.brand-mark{display:flex;align-items:center;gap:10px;font-family:'Outfit',sans-serif;font-weight:800;font-size:17px;letter-spacing:-0.02em;pointer-events:auto;}
+.brand-mark .dot{width:11px;height:11px;background:var(--gradient);border-radius:50%;box-shadow:0 0 14px rgba(56,189,248,0.7);animation:pulse 2.5s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.75}}
+.slide-counter{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:.1em;padding:8px 15px;background:rgba(11,16,30,0.6);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:100px;pointer-events:auto;}
+
+/* section progress */
+.progress-wrap{position:fixed;top:22px;left:50%;transform:translateX(-50%);z-index:100;display:flex;gap:7px;pointer-events:none;background:rgba(11,16,30,0.55);backdrop-filter:blur(10px);border:1px solid var(--border);padding:8px 12px;border-radius:100px;}
+.pseg{display:flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);transition:color .4s var(--easing);}
+.pseg .pdot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.16);transition:all .4s var(--easing);}
+.pseg.on{color:var(--text);}
+.pseg.on .pdot{background:var(--gradient);box-shadow:0 0 10px rgba(56,189,248,.6);}
+.pseg .plabel{display:none;}
+.pseg.on .plabel{display:inline;}
+@media(max-width:900px){.progress-wrap{display:none}}
+
+/* bottom controls */
+.deck-controls{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:14px;background:rgba(11,16,30,0.75);backdrop-filter:blur(16px);border:1px solid var(--border);padding:9px 13px;border-radius:100px;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.ctrl-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid transparent;border-radius:50%;color:var(--text);cursor:pointer;transition:all .2s var(--easing);font-size:16px;}
+.ctrl-btn:hover{background:rgba(255,255,255,.07);border-color:var(--border);transform:scale(1.08);}
+.dot-strip{display:flex;gap:6px;padding:0 6px;max-width:46vw;overflow-x:auto;scrollbar-width:none;}
+.dot-strip::-webkit-scrollbar{display:none;}
+.dot-strip .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.18);flex-shrink:0;transition:all .25s var(--easing);cursor:pointer;}
+.dot-strip .dot.active{width:22px;border-radius:4px;background:var(--gradient);}
+.key-hint{position:fixed;bottom:26px;right:26px;z-index:100;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:.12em;display:flex;align-items:center;gap:8px;}
+.key-hint kbd{font-family:inherit;font-size:10px;padding:3px 7px;background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--muted);}
+@media(max-width:900px){.key-hint{display:none}}
+
+/* cards */
+.card{background:linear-gradient(160deg,rgba(21,30,50,0.7),rgba(11,16,30,0.5));border:1px solid var(--border);border-radius:20px;padding:26px;backdrop-filter:blur(8px);}
+.grid{display:grid;gap:18px;}
+.emoji-chip{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;background:rgba(255,255,255,0.04);border:1px solid var(--border);}
+
+/* ===== SECTION DIVIDER ===== */
+.divider .slide-inner{text-align:center;}
+.divider .sec-num{font-family:'JetBrains Mono',monospace;font-size:clamp(70px,14vw,190px);font-weight:700;line-height:.9;letter-spacing:-.04em;background:var(--gradient);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 50px rgba(56,189,248,.25));}
+.divider .sec-title{font-size:clamp(34px,5.2vw,68px);font-weight:900;margin-top:6px;}
+.divider .sec-sub{color:var(--muted);margin-top:18px;font-size:clamp(15px,1.5vw,20px);max-width:640px;margin-left:auto;margin-right:auto;}
+.divider .barline{margin:34px auto 0;height:4px;width:min(520px,70vw);border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;position:relative;}
+.divider.active .barline::after{content:'';position:absolute;inset:0;background:var(--gradient);transform-origin:left;animation:barfill 1s var(--easing) forwards .2s;transform:scaleX(0);}
+@keyframes barfill{to{transform:scaleX(1)}}
+
+/* ===================== ANIMATED DIAGRAMS ===================== */
+
+/* generic flowing connector */
+.flowline{position:relative;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;flex:1;min-width:26px;}
+.flowline::after{content:'';position:absolute;top:0;left:-40%;width:40%;height:100%;background:linear-gradient(90deg,transparent,var(--primary),transparent);}
+.slide.active .flowline::after{animation:flow 1.6s linear infinite;}
+@keyframes flow{to{left:120%}}
+
+/* --- LLM PIPELINE (slide 4) --- */
+.pipe{display:flex;align-items:stretch;gap:12px;flex-wrap:nowrap;}
+.pstage{flex:1;min-width:0;background:linear-gradient(160deg,rgba(21,30,50,0.75),rgba(11,16,30,0.55));border:1px solid var(--border);border-radius:18px;padding:18px 14px;display:flex;flex-direction:column;align-items:center;gap:10px;position:relative;}
+.pstage .plab{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+.pstage .pdesc{font-size:12.5px;color:var(--dim);text-align:center;line-height:1.4;}
+.parrow{display:flex;align-items:center;color:var(--dim);font-size:22px;}
+.slide.active .parrow{animation:arrowpulse 1.6s ease-in-out infinite;}
+@keyframes arrowpulse{0%,100%{opacity:.35;transform:translateX(0)}50%{opacity:1;transform:translateX(4px)}}
+.tokrow{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;}
+.tok{padding:4px 8px;border-radius:7px;background:rgba(56,189,248,0.14);border:1px solid rgba(56,189,248,0.35);font-family:'JetBrains Mono',monospace;font-size:11px;color:#bfe9ff;opacity:0;transform:scale(.6);}
+.slide.active .tok{animation:tokpop .5s var(--easing) forwards;}
+.slide.active .tok:nth-child(1){animation-delay:.5s}.slide.active .tok:nth-child(2){animation-delay:.62s}
+.slide.active .tok:nth-child(3){animation-delay:.74s}.slide.active .tok:nth-child(4){animation-delay:.86s}
+.slide.active .tok:nth-child(5){animation-delay:.98s}
+@keyframes tokpop{to{opacity:1;transform:scale(1)}}
+.numrow{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);}
+.layers{display:flex;flex-direction:column;gap:5px;width:100%;}
+.lyr{height:9px;border-radius:5px;background:linear-gradient(90deg,rgba(167,139,250,0.25),rgba(167,139,250,0.5));position:relative;overflow:hidden;}
+.lyr::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);transform:translateX(-100%);}
+.slide.active .lyr::after{animation:lyrsweep 1.8s linear infinite;}
+.slide.active .lyr:nth-child(2)::after{animation-delay:.2s}.slide.active .lyr:nth-child(3)::after{animation-delay:.4s}
+.slide.active .lyr:nth-child(4)::after{animation-delay:.6s}.slide.active .lyr:nth-child(5)::after{animation-delay:.8s}
+@keyframes lyrsweep{to{transform:translateX(100%)}}
+.answer-badge{font-size:26px;font-weight:800;}
+.slide.active .answer-badge{animation:answerglow 2s ease-in-out infinite;}
+@keyframes answerglow{0%,100%{filter:drop-shadow(0 0 0px rgba(52,211,153,0))}50%{filter:drop-shadow(0 0 16px rgba(52,211,153,.6))}}
+
+/* --- SYSTEMS (slide 6) --- */
+.sysmap{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;}
+.sysnode{width:150px;height:150px;border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;background:linear-gradient(160deg,rgba(21,30,50,0.8),rgba(11,16,30,0.6));border:1px solid var(--border-2);position:relative;}
+.sysnode .se{font-size:36px;}
+.sysnode .sn{font-weight:700;font-size:16px;}
+.sysnode .sd{font-size:11px;color:var(--dim);padding:0 8px;line-height:1.3;}
+.syswire{width:80px;height:4px;position:relative;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;}
+.syswire .pkt{position:absolute;top:-4px;left:-12px;width:12px;height:12px;border-radius:50%;background:var(--primary);box-shadow:0 0 12px var(--primary);}
+.slide.active .syswire .pkt{animation:sysflow 2s linear infinite;}
+.slide.active .syswire.rev .pkt{animation:sysflowrev 2s linear infinite;background:var(--secondary);box-shadow:0 0 12px var(--secondary);}
+@keyframes sysflow{0%{left:-12px}100%{left:100%}}
+@keyframes sysflowrev{0%{left:100%}100%{left:-12px}}
+.syslabel{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+
+/* --- KEYSTROKE -> LIVE APP (slide 13) --- */
+.k2g{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;}
+.k2node{width:135px;height:135px;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;text-align:center;background:linear-gradient(160deg,rgba(21,30,50,0.8),rgba(11,16,30,0.6));border:1px solid var(--border-2);}
+.k2node .ke{font-size:34px;}
+.k2node .kn{font-weight:700;font-size:14px;}
+.k2node .kj{font-size:10.5px;color:var(--dim);}
+.k2wire{width:70px;height:4px;position:relative;background:rgba(255,255,255,0.1);border-radius:2px;}
+.k2wire .glow{position:absolute;top:-5px;left:-14px;width:14px;height:14px;border-radius:50%;background:var(--accent);box-shadow:0 0 16px var(--accent),0 0 30px rgba(251,191,36,.5);}
+.slide.active .k2wire .glow{animation:k2flow 3.2s linear infinite;}
+.slide.active .k2wire.w2 .glow{animation-delay:.8s}
+.slide.active .k2wire.w3 .glow{animation-delay:1.6s}
+@keyframes k2flow{0%{left:-14px;opacity:0}10%{opacity:1}90%{opacity:1}100%{left:100%;opacity:0}}
+.phone{width:96px;height:135px;border-radius:20px;border:2px solid var(--border-2);background:var(--surface);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.phone .screen{position:absolute;inset:5px;border-radius:14px;background:radial-gradient(circle at 50% 40%,rgba(52,211,153,0.35),rgba(11,16,30,0.9));display:flex;align-items:center;justify-content:center;font-size:30px;}
+.slide.active .phone{animation:phonelight 3.2s ease-in-out infinite;}
+@keyframes phonelight{0%,60%{box-shadow:0 0 0 rgba(52,211,153,0)}80%{box-shadow:0 0 34px rgba(52,211,153,.55)}100%{box-shadow:0 0 0 rgba(52,211,153,0)}}
+
+/* --- VIBE-CODE LOOP (slide 20) --- */
+.loopwrap{display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap;}
+.ring{position:relative;width:340px;height:340px;flex-shrink:0;}
+.ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);}
+.ring .track{fill:none;stroke:rgba(255,255,255,0.08);stroke-width:6;}
+.ring .prog{fill:none;stroke:url(#loopgrad);stroke-width:6;stroke-linecap:round;stroke-dasharray:1000;stroke-dashoffset:1000;}
+.slide.active .ring .prog{animation:ringdraw 4s var(--easing) infinite;}
+@keyframes ringdraw{0%{stroke-dashoffset:1000}70%{stroke-dashoffset:0}100%{stroke-dashoffset:0}}
+.ring .step{position:absolute;width:74px;height:74px;margin:-37px 0 0 -37px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:linear-gradient(160deg,rgba(21,30,50,0.95),rgba(11,16,30,0.85));border:1px solid var(--border-2);font-size:10px;text-align:center;line-height:1.05;}
+.ring .step .si{font-size:20px;}
+.ring .step .st{font-size:9px;color:var(--muted);font-weight:600;}
+.ring .center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;}
+.dc-legend{display:flex;flex-direction:column;gap:14px;}
+.dc-pill{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,0.02);}
+.dc-pill .dce{font-size:26px;}
+.dc-pill.doer{border-color:rgba(56,189,248,0.4);}
+.dc-pill.checker{border-color:rgba(251,191,36,0.4);}
+.slide.active .dc-pill.doer{animation:doerpulse 4s ease-in-out infinite;}
+.slide.active .dc-pill.checker{animation:checkerpulse 4s ease-in-out infinite;}
+@keyframes doerpulse{0%,40%,100%{box-shadow:0 0 0 rgba(56,189,248,0)}20%{box-shadow:0 0 22px rgba(56,189,248,.35)}}
+@keyframes checkerpulse{0%,60%,100%{box-shadow:0 0 0 rgba(251,191,36,0)}80%{box-shadow:0 0 22px rgba(251,191,36,.35)}}
+
+/* --- COLLAB (slide 11) --- */
+.collab{display:flex;align-items:stretch;justify-content:center;gap:0;max-width:1060px;margin:0 auto;}
+.cnode{width:225px;flex-shrink:0;border-radius:24px;background:linear-gradient(160deg,rgba(21,30,50,0.85),rgba(11,16,30,0.6));border:1px solid var(--border-2);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px;gap:8px;}
+.cnode .ce{font-size:56px;line-height:1;}
+.cnode .cnm{font-family:'Outfit',sans-serif;font-weight:800;font-size:24px;}
+.cnode .crole{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center;line-height:1.5;}
+.clanes{flex:1;display:flex;flex-direction:column;justify-content:center;gap:30px;padding:0 10px;}
+.clane{position:relative;height:46px;border-radius:23px;background:rgba(255,255,255,0.025);border:1px solid var(--border);overflow:hidden;}
+.clane .llbl{position:absolute;top:-17px;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);}
+.clane.top .llbl{left:10px;}.clane.bot .llbl{right:10px;}
+.chip{position:absolute;top:50%;transform:translateY(-50%);white-space:nowrap;padding:6px 13px;border-radius:20px;font-size:12.5px;font-weight:600;border:1px solid;}
+.chip.instr{background:rgba(56,189,248,0.14);border-color:rgba(56,189,248,0.4);color:#bfe9ff;}
+.chip.res{background:rgba(52,211,153,0.13);border-color:rgba(52,211,153,0.4);color:#b9f3dc;}
+.slide.active .clane.top .chip{animation:laneR 5s linear infinite both;}
+.slide.active .clane.bot .chip{animation:laneL 5s linear infinite both;}
+.slide.active .clane.top .chip:nth-child(2){animation-delay:0s}.slide.active .clane.top .chip:nth-child(3){animation-delay:1.67s}.slide.active .clane.top .chip:nth-child(4){animation-delay:3.34s}
+.slide.active .clane.bot .chip:nth-child(2){animation-delay:.83s}.slide.active .clane.bot .chip:nth-child(3){animation-delay:2.5s}.slide.active .clane.bot .chip:nth-child(4){animation-delay:4.17s}
+@keyframes laneR{0%{left:-34%;opacity:0}8%{opacity:1}88%{opacity:1}100%{left:110%;opacity:0}}
+@keyframes laneL{0%{left:110%;opacity:0}8%{opacity:1}88%{opacity:1}100%{left:-34%;opacity:0}}
+
+/* --- memory-type card mini-label --- */
+.mtype{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin-top:4px;}
+
+/* helper layouts */
+.row{display:flex;gap:18px;flex-wrap:wrap;}
+.center{text-align:center;}
+.mt10{margin-top:10px}.mt18{margin-top:18px}.mt26{margin-top:26px}.mt34{margin-top:34px}
+.tool-detail{display:flex;align-items:center;gap:22px;}
+.list-clean{list-style:none;display:flex;flex-direction:column;gap:12px;}
+.list-clean li{display:flex;gap:12px;align-items:flex-start;font-size:clamp(15px,1.3vw,18px);color:var(--text);}
+.list-clean li .b{color:var(--primary);flex-shrink:0;font-weight:700;}
+.tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);border:1px solid rgba(251,191,36,.3);border-radius:100px;padding:5px 12px;}
+.codeblock{font-family:'JetBrains Mono',monospace;font-size:clamp(12px,1.05vw,14px);background:rgba(3,5,12,0.7);border:1px solid var(--border);border-radius:12px;padding:14px 16px;color:#cbd5e1;text-align:left;white-space:pre;overflow-x:auto;}
+.hl-cyan{color:var(--primary)}.hl-viol{color:var(--secondary)}.hl-gold{color:var(--accent)}.hl-green{color:var(--emerald)}.hl-dim{color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="atmosphere"></div>
+<div class="grain"></div>
+
+<div class="deck-nav">
+  <div class="brand-mark"><span class="dot"></span> Build&nbsp;Anything</div>
+  <div class="slide-counter"><span id="cur">01</span> / <span id="tot">40</span></div>
+</div>
+
+<div class="progress-wrap" id="progress"></div>
+
+<div class="deck" id="deck">
+<!-- slides injected below -->
+
+<!-- ============ 0 · TITLE ============ -->
+<section class="slide" data-sec="0">
+  <div class="slide-inner center">
+    <div class="reveal"><span class="kicker">Build with AI · for builders</span></div>
+    <h1 class="title-xxl reveal d1">Build <span class="gradient-text">Anything</span></h1>
+    <h2 class="title-l reveal d2" style="margin-top:6px;font-weight:700;">From game worlds <span class="cool-text">→</span> the real world</h2>
+    <p class="body-lg reveal d3" style="margin:22px auto 0;">You already build worlds in Roblox and Minecraft.<br>Today you learn to build <b class="gradient-text">real things in the real world</b> — with AI.</p>
+    <div class="reveal d4 mt26" style="display:flex;gap:26px;justify-content:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);">
+      <span>🤖 Cursor</span><span>🗂️ GitHub</span><span>🚀 Vercel</span><span>🛰️ MCP</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DIVIDER 0 ============ -->
+<section class="slide divider" data-sec="0">
+  <div class="slide-inner">
+    <div class="sec-num reveal">00</div>
+    <div class="sec-title reveal d1">Overview</div>
+    <div class="sec-sub reveal d2">Why AI is the biggest thing that will happen in your lifetime — and how it actually works.</div>
+    <div class="barline"></div>
+  </div>
+</section>
+
+<!-- 2 · What is AI -->
+<section class="slide" data-sec="0">
+  <div class="slide-inner">
+    <span class="kicker reveal">What is AI</span>
+    <h2 class="title-l reveal d1">Remember when you had to <span class="warm-text">wait</span> for someone else to make the game?</h2>
+    <div class="row mt26">
+      <div class="card reveal d2" style="flex:1;min-width:260px;">
+        <div class="big-emoji">🎮</div>
+        <h3 class="title-s mt10">Then Roblox &amp; Minecraft came</h3>
+        <p class="body-md mt10">Suddenly <b style="color:var(--text)">anyone</b> could build their own worlds, their own games, their own rules — no permission needed.</p>
+      </div>
+      <div class="card reveal d3" style="flex:1;min-width:260px;border-color:rgba(56,189,248,0.35);">
+        <div class="big-emoji">🌍</div>
+        <h3 class="title-s mt10">AI is that — for the real world</h3>
+        <p class="body-md mt10">Now the "game" is the actual world you live in. With AI you can <b class="gradient-text">be anything and build anything.</b></p>
+      </div>
+    </div>
+    <p class="body-lg reveal d4 mt26 center" style="margin-left:auto;margin-right:auto;">The only question left is: do you <b class="gradient-text">learn to build</b> — or just play in worlds other people made?</p>
+  </div>
+</section>
+
+<!-- 3 · Builder vs Participant -->
+<section class="slide" data-sec="0">
+  <div class="slide-inner center">
+    <span class="kicker reveal">The choice</span>
+    <h2 class="title-xl reveal d1">Two kinds of people now</h2>
+    <div class="row mt34" style="justify-content:center;">
+      <div class="card reveal d2" style="width:340px;">
+        <div class="big-emoji">🕹️</div>
+        <h3 class="title-m mt10">The Participant</h3>
+        <p class="body-md mt10">Uses what others build. Scrolls, plays, consumes. Waits for the next thing to be handed to them.</p>
+      </div>
+      <div class="card reveal d3" style="width:340px;border-color:rgba(167,139,250,0.45);box-shadow:0 0 50px rgba(167,139,250,0.12);">
+        <div class="big-emoji">🛠️</div>
+        <h3 class="title-m mt10 gradient-text">The Builder</h3>
+        <p class="body-md mt10">Makes the thing — turns an idea into something real people use. <b style="color:var(--text)">You already did it in Roblox. Tonight you do it for real.</b></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 · How AI works: PIPELINE -->
+<section class="slide" data-sec="0">
+  <div class="slide-inner">
+    <span class="kicker reveal">How AI works</span>
+    <h2 class="title-l reveal d1">An LLM is a giant <span class="gradient-text">math machine</span> that turns words into more words</h2>
+    <div class="pipe reveal d2 mt26">
+      <div class="pstage">
+        <div class="plab">1 · Learn</div>
+        <div class="big-emoji">📚</div>
+        <div class="pdesc">It reads a huge slice of the <b style="color:var(--text)">world's data</b> — books, code, the web.</div>
+      </div>
+      <div class="parrow">→</div>
+      <div class="pstage">
+        <div class="plab">2 · Tokens</div>
+        <div class="tokrow">
+          <span class="tok">drag</span><span class="tok">on</span><span class="tok">fly</span><span class="tok">is</span><span class="tok">cool</span>
+        </div>
+        <div class="numrow" style="margin-top:2px;">→ 8135 · 402 · 1990</div>
+        <div class="pdesc">Words get chopped into <b style="color:var(--text)">tokens</b> — pieces turned into <b style="color:var(--accent)">numbers</b> it can do math on.</div>
+      </div>
+      <div class="parrow">→</div>
+      <div class="pstage">
+        <div class="plab">3 · Many layers of math</div>
+        <div class="layers"><div class="lyr"></div><div class="lyr"></div><div class="lyr"></div><div class="lyr"></div><div class="lyr"></div></div>
+        <div class="pdesc">The numbers flow through <b style="color:var(--text)">layer after layer</b> of math, finding patterns.</div>
+      </div>
+      <div class="parrow">→</div>
+      <div class="pstage" style="border-color:rgba(52,211,153,0.4);">
+        <div class="plab">4 · Answer</div>
+        <div class="answer-badge green-text">"🐉✨"</div>
+        <div class="pdesc">Out comes the <b class="green-text">most likely next words</b> — your answer.</div>
+      </div>
+    </div>
+    <p class="body-md reveal d4 mt18 center" style="margin-left:auto;margin-right:auto;">Tokens are the <b style="color:var(--text)">LEGO bricks of language</b>. The layers are a <b style="color:var(--text)">factory conveyor</b> where the answer takes shape. No magic — just a <b class="gradient-text">lot</b> of math.</p>
+  </div>
+</section>
+
+<!-- ============ DIVIDER 1 ============ -->
+<section class="slide divider" data-sec="1">
+  <div class="slide-inner">
+    <div class="sec-num reveal">01</div>
+    <div class="sec-title reveal d1">Fundamentals</div>
+    <div class="sec-sub reveal d2">How to think when you work with AI — and the parts every app is made of.</div>
+    <div class="barline"></div>
+  </div>
+</section>
+
+<!-- 5 · First principles -->
+<section class="slide" data-sec="1">
+  <div class="slide-inner">
+    <span class="kicker reveal">Mindset</span>
+    <h2 class="title-l reveal d1">Think in <span class="gradient-text">first principles</span></h2>
+    <p class="body-lg reveal d2 mt18">Don't just copy what exists. Ask: <b style="color:var(--text)">"what is this thing really made of?"</b> Break it down to the parts that are actually true, then rebuild from there.</p>
+    <div class="card reveal d3 mt26" style="max-width:820px;">
+      <div class="tag">Example</div>
+      <h3 class="title-s mt10">What <i>is</i> a game, really?</h3>
+      <p class="body-md mt10"><b class="hl-cyan">Rules</b> + a <b class="hl-viol">world</b> + a <b class="hl-gold">player</b>. That's it. Once you see the parts, you can build a brand-new game nobody's made — because you understand what a game <i>is</i>, not just what other games <i>look like</i>. AI is the same: know the parts, and you can direct it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 6 · Systems diagram -->
+<section class="slide" data-sec="1">
+  <div class="slide-inner center">
+    <span class="kicker reveal">Systems</span>
+    <h2 class="title-l reveal d1">Every app is made of <span class="gradient-text">three things</span> talking</h2>
+    <p class="body-md reveal d1 mt10">A Roblox game and a real app have the <b style="color:var(--text)">same skeleton.</b></p>
+    <div class="sysmap reveal d2 mt18">
+      <div class="sysnode"><div class="se">🧑</div><div class="sn">User</div><div class="sd">You. The person using it.</div></div>
+      <div class="syswire"><span class="syslabel">interface</span><span class="pkt"></span></div>
+      <div class="sysnode" style="border-color:rgba(56,189,248,0.4)"><div class="se">🖥️</div><div class="sn">Front End</div><div class="sd">What you see &amp; tap. Buttons, screens, colors.</div></div>
+      <div class="syswire rev"><span class="pkt"></span></div>
+      <div class="sysnode" style="border-color:rgba(167,139,250,0.4)"><div class="se">🗄️</div><div class="sn">Database</div><div class="sd">Where everything is remembered.</div></div>
+    </div>
+    <p class="body-lg reveal d3 mt34" style="margin-left:auto;margin-right:auto;">The <b class="gradient-text">interface</b> is <i>how</i> they talk — the messages flying back and forth. Today, <b style="color:var(--text)">Vercel puts your front end on the real internet.</b></p>
+  </div>
+</section>
+
+<!-- 7 · Math -->
+<section class="slide" data-sec="1">
+  <div class="slide-inner">
+    <span class="kicker reveal">Math is the language of AI</span>
+    <h2 class="title-l reveal d1">Math is the <span class="warm-text">secret code</span> underneath it all</h2>
+    <div class="row mt26">
+      <div class="card reveal d2" style="flex:1;min-width:220px;"><div class="big-emoji">👁️</div><h3 class="title-s mt10">Numbers = how it "sees"</h3><p class="body-md mt10">The computer can't read letters. It turns everything — words, images, sound — into numbers.</p></div>
+      <div class="card reveal d3" style="flex:1;min-width:220px;"><div class="big-emoji">🧩</div><h3 class="title-s mt10">Tokens are numbers</h3><p class="body-md mt10">Every token has a number. "Understanding" is really finding <b style="color:var(--text)">patterns</b> in those numbers.</p></div>
+      <div class="card reveal d4" style="flex:1;min-width:220px;"><div class="big-emoji">📈</div><h3 class="title-s mt10">Patterns are math</h3><p class="body-md mt10">You don't need to do the math by hand — but knowing it's <i>there</i> is your superpower over people who think it's magic.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DIVIDER 2 ============ -->
+<section class="slide divider" data-sec="2">
+  <div class="slide-inner">
+    <div class="sec-num reveal">02</div>
+    <div class="sec-title reveal d1">Coding with AI</div>
+    <div class="sec-sub reveal d2">The tools, the "context window," and how a keystroke becomes a live app.</div>
+    <div class="barline"></div>
+  </div>
+</section>
+
+<!-- 8 · You + AI building together -->
+<section class="slide" data-sec="2">
+  <div class="slide-inner center">
+    <span class="kicker reveal">Vibe coding</span>
+    <h2 class="title-l reveal d1">You <span class="gradient-text">+</span> AI, building together</h2>
+    <p class="body-md reveal d2" style="max-width:820px;margin:12px auto 0;">Not a handoff — a back-and-forth. You steer with plain words; the AI drafts, explains, and fixes. Over and over, fast.</p>
+    <div class="collab reveal d3 mt34">
+      <div class="cnode"><div class="ce">🧑</div><div class="cnm">You</div><div class="crole">describe<br>steer · decide</div></div>
+      <div class="clanes">
+        <div class="clane top"><span class="llbl">you → ai · instructions</span>
+          <span class="chip instr">"make it blue"</span><span class="chip instr">"smaller"</span><span class="chip instr">"add a sound 🔊"</span></div>
+        <div class="clane bot"><span class="llbl">ai → you · code + answers</span>
+          <span class="chip res">done ✓</span><span class="chip res">here's the code 💻</span><span class="chip res">"want it darker?"</span></div>
+      </div>
+      <div class="cnode" style="border-color:rgba(56,189,248,0.45)"><div class="ce">🤖</div><div class="cnm">AI</div><div class="crole">drafts · builds<br>explains</div></div>
+    </div>
+    <p class="body-md reveal d4 mt34" style="max-width:840px;margin-left:auto;margin-right:auto;">You don't memorize code to start. You <b style="color:var(--text)">do</b> need to know what you want and how to check it's right. <b class="gradient-text">You're the director; the AI is the crew.</b></p>
+  </div>
+</section>
+
+<!-- 9 · context window = short-term memory -> 3 kinds -->
+<section class="slide" data-sec="2">
+  <div class="slide-inner center">
+    <span class="kicker reveal">The context window</span>
+    <h2 class="title-l reveal d1">The context window is just <span class="warm-text">short-term memory</span></h2>
+    <p class="body-md reveal d2" style="max-width:860px;margin:12px auto 0;">It's the AI's desk — everything it can see <i>right now</i>. Close the chat and the desk is wiped. So great builders give the AI <b style="color:var(--text)">three kinds of memory:</b></p>
+    <div class="row mt26" style="justify-content:center;">
+      <div class="card reveal d3" style="flex:1;min-width:210px;border-color:rgba(56,189,248,0.4)"><div class="big-emoji">⚡</div><h3 class="title-s mt10">Short-term</h3><div class="mtype">working memory</div><p class="body-md mt10">The context window + a <span class="mono hl-cyan">MEMORY.md</span> sticky-note file: what we're doing <i>right now</i>.</p></div>
+      <div class="card reveal d4" style="flex:1;min-width:210px;border-color:rgba(251,191,36,0.4)"><div class="big-emoji">📚</div><h3 class="title-s mt10">Long-term</h3><div class="mtype">curated</div><p class="body-md mt10"><b style="color:var(--text)">docs · wiki · specs</b> — the stuff that stays true. You build this in Section 4.</p></div>
+      <div class="card reveal d5" style="flex:1;min-width:210px;border-color:rgba(167,139,250,0.4)"><div class="big-emoji">🔎</div><h3 class="title-s mt10">Semantic</h3><div class="mtype">searchable</div><p class="body-md mt10">Past chats found by <i>meaning</i>: "what did we decide about X?"</p></div>
+    </div>
+    <p class="body-md reveal d6 mt26">Together they beat the blank-desk problem — the AI stops forgetting.</p>
+  </div>
+</section>
+
+<!-- 9b · MCP = live memory (moved up, ties to memory) -->
+<section class="slide" data-sec="2">
+  <div class="slide-inner center">
+    <span class="kicker reveal">The 4th memory · live</span>
+    <h2 class="title-xl reveal d1">And an <span class="gradient-text">MCP</span> gives it <span class="gradient-text">live</span> memory 🛰️</h2>
+    <p class="body-lg reveal d2 mt18" style="margin-left:auto;margin-right:auto;">The three memories hold what we <i>said</i> and <i>decided</i>. An <b style="color:var(--text)">MCP</b> covers what's true <b class="gradient-text">right now</b> — it's a <b style="color:var(--text)">walkie-talkie between your AI and a live app.</b></p>
+    <div class="card reveal d3 mt26" style="max-width:860px;margin-left:auto;margin-right:auto;">
+      <p class="body-md">Instead of you copy-pasting what's on screen, the AI <b style="color:var(--text)">reaches into the live app</b> and reads it directly — the real, current state. That's how it stops <i>guessing</i> and starts <i>seeing.</i></p>
+    </div>
+    <p class="body-md reveal d4 mt18">Short-term · long-term · semantic · <b class="gradient-text">live</b> — that's the full memory picture.</p>
+  </div>
+</section>
+
+<!-- 10 · four tools -->
+<section class="slide" data-sec="2">
+  <div class="slide-inner">
+    <span class="kicker reveal">The toolkit</span>
+    <h2 class="title-l reveal d1">Three tools, three jobs</h2>
+    <p class="body-md reveal d2 mt10">Each does <b style="color:var(--text)">one</b> job. Together they turn "an idea" into "a live app anyone can open."</p>
+    <div class="row mt26">
+      <div class="card reveal d3" style="flex:1;min-width:200px;"><div class="emoji-chip">🤖</div><h3 class="title-s mt18">Cursor</h3><div class="tag mt10">Editor</div><p class="body-md mt10">The AI code editor. You write and talk to the AI here.</p></div>
+      <div class="card reveal d4" style="flex:1;min-width:200px;"><div class="emoji-chip">🗂️</div><h3 class="title-s mt18">GitHub</h3><div class="tag mt10">Save · Undo</div><p class="body-md mt10">Version control. Saves every change and backs it up online.</p></div>
+      <div class="card reveal d5" style="flex:1;min-width:200px;"><div class="emoji-chip">🚀</div><h3 class="title-s mt18">Vercel</h3><div class="tag mt10">Go live</div><p class="body-md mt10">Puts your app on the real internet with a shareable link.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 · tool detail -->
+<section class="slide" data-sec="2">
+  <div class="slide-inner">
+    <span class="kicker reveal">In detail</span>
+    <h2 class="title-l reveal d1">What each tool actually is</h2>
+    <div class="grid mt26" style="gap:16px;">
+      <div class="card reveal d2 tool-detail"><div class="emoji-chip" style="font-size:30px;">🤖</div><div><h3 class="title-s">Cursor — the AI editor</h3><p class="body-md mt10">A code editor (like a super-powered text app for code) with an AI built in. Highlight code and ask "what does this do?" or "add a button." It writes; you approve.</p></div></div>
+      <div class="card reveal d3 tool-detail"><div class="emoji-chip" style="font-size:30px;">🗂️</div><div><h3 class="title-s">GitHub — save points for code</h3><p class="body-md mt10">Like save points in a game. Every <b class="mono">commit</b> is a snapshot you can return to. Push it online and your whole project is backed up and shareable.</p></div></div>
+      <div class="card reveal d4 tool-detail"><div class="emoji-chip" style="font-size:30px;">🚀</div><div><h3 class="title-s">Vercel — the launchpad</h3><p class="body-md mt10">Connect your GitHub, and Vercel builds your app and puts it on a real web address in seconds. Every time you push, it updates.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 · keystroke to live app -->
+<section class="slide" data-sec="2">
+  <div class="slide-inner center">
+    <span class="kicker reveal">The signature move</span>
+    <h2 class="title-l reveal d1">From <span class="gradient-text">keystroke</span> to <span class="green-text">live app</span></h2>
+    <p class="body-md reveal d2 mt10">Watch one keystroke travel all the way to the internet.</p>
+    <div class="k2g reveal d3 mt34">
+      <div class="k2node"><div class="ke">🤖</div><div class="kn">Cursor</div><div class="kj">you + AI write</div></div>
+      <div class="k2wire w1"><span class="glow"></span></div>
+      <div class="k2node"><div class="ke">🗂️</div><div class="kn">Git → GitHub</div><div class="kj">save + back up</div></div>
+      <div class="k2wire w2"><span class="glow"></span></div>
+      <div class="k2node"><div class="ke">🚀</div><div class="kn">Vercel</div><div class="kj">builds it</div></div>
+      <div class="k2wire w3"><span class="glow"></span></div>
+      <div class="phone"><div class="screen">🌐</div></div>
+    </div>
+    <p class="body-md reveal d4 mt34" style="margin-left:auto;margin-right:auto;">Type → save → build → <b class="green-text">live on someone's phone.</b> It's the real-world version of hitting <b style="color:var(--text)">Play</b> in Roblox.</p>
+  </div>
+</section>
+
+<!-- ============ DIVIDER 3 ============ -->
+<section class="slide divider" data-sec="3">
+  <div class="slide-inner">
+    <div class="sec-num reveal">03</div>
+    <div class="sec-title reveal d1">Setup</div>
+    <div class="sec-sub reveal d2">Hands on. Get Cursor, GitHub, and Vercel running on your machine.</div>
+    <div class="barline"></div>
+  </div>
+</section>
+
+<!-- 14 · setup cursor -->
+<section class="slide" data-sec="3">
+  <div class="slide-inner">
+    <span class="kicker reveal">Setup · 1 of 3</span>
+    <h2 class="title-l reveal d1">🤖 Set up <span class="gradient-text">Cursor</span></h2>
+    <div class="row mt26" style="align-items:flex-start;">
+      <ul class="list-clean reveal d2" style="flex:1;min-width:280px;">
+        <li><span class="b">1.</span><span><b style="color:var(--text)">Update macOS</b> first (Apple menu → System Settings → General → Software Update).</span></li>
+        <li><span class="b">2.</span><span>Install <b style="color:var(--text)">Xcode Command Line Tools</b> — this gives your Mac the developer basics (like Git).</span></li>
+        <li><span class="b">3.</span><span>Download <b style="color:var(--text)">Cursor</b> from cursor.com, drag it to Applications, open it, and sign in.</span></li>
+        <li><span class="b">4.</span><span>Open a terminal inside Cursor: <b class="mono">Terminal → New Terminal.</b></span></li>
+      </ul>
+      <div class="reveal d3" style="flex:1;min-width:280px;">
+        <div class="tag">Run this in the terminal</div>
+        <div class="codeblock mt10"><span class="hl-dim"># installs the Mac developer tools</span>
+xcode-select <span class="hl-cyan">--install</span>
+
+<span class="hl-dim"># check it worked</span>
+git <span class="hl-cyan">--version</span></div>
+        <p class="body-md mt18">A window pops up — click <b style="color:var(--text)">Install</b> and wait. When <span class="mono">git --version</span> prints a number, you're ready.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 · setup github -->
+<section class="slide" data-sec="3">
+  <div class="slide-inner">
+    <span class="kicker reveal">Setup · 2 of 3</span>
+    <h2 class="title-l reveal d1">🗂️ Set up <span class="gradient-text">GitHub</span></h2>
+    <div class="row mt26" style="align-items:flex-start;">
+      <ul class="list-clean reveal d2" style="flex:1;min-width:280px;">
+        <li><span class="b">1.</span><span>Make a free account at <b style="color:var(--text)">github.com</b> (pick a username you'd show a boss).</span></li>
+        <li><span class="b">2.</span><span>Tell Git who you are (once per computer).</span></li>
+        <li><span class="b">3.</span><span>Make your first project folder into a repo and take the first save.</span></li>
+        <li><span class="b">4.</span><span>Create an empty repo on GitHub, then push your code up.</span></li>
+      </ul>
+      <div class="reveal d3" style="flex:1;min-width:300px;">
+        <div class="tag">First save + push</div>
+        <div class="codeblock mt10">git init
+git add <span class="hl-cyan">.</span>
+git commit <span class="hl-cyan">-m</span> <span class="hl-green">"my first save"</span>
+git branch <span class="hl-cyan">-M</span> main
+git remote add origin <span class="hl-dim">&lt;your-repo-url&gt;</span>
+git push <span class="hl-cyan">-u</span> origin main</div>
+        <p class="body-md mt18"><b style="color:var(--text)">Commit early, commit often.</b> Every commit is an undo point you can always return to.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 16 · setup vercel -->
+<section class="slide" data-sec="3">
+  <div class="slide-inner">
+    <span class="kicker reveal">Setup · 3 of 3</span>
+    <h2 class="title-l reveal d1">🚀 Set up <span class="gradient-text">Vercel</span></h2>
+    <div class="row mt26">
+      <div class="card reveal d2" style="flex:1;min-width:200px;"><div class="emoji-chip">①</div><h3 class="title-s mt18">Sign up with GitHub</h3><p class="body-md mt10">Go to vercel.com → <b style="color:var(--text)">Continue with GitHub</b>. One click, no new password.</p></div>
+      <div class="card reveal d3" style="flex:1;min-width:200px;"><div class="emoji-chip">②</div><h3 class="title-s mt18">Import your repo</h3><p class="body-md mt10">Add New → Project → pick the repo you just pushed. Vercel reads it automatically.</p></div>
+      <div class="card reveal d4" style="flex:1;min-width:200px;"><div class="emoji-chip">③</div><h3 class="title-s mt18">Deploy</h3><p class="body-md mt10">Click <b class="green-text">Deploy</b>, wait ~30 seconds, and you get a <b style="color:var(--text)">live link.</b> 🎉</p></div>
+    </div>
+    <p class="body-md reveal d5 mt26 center" style="margin-left:auto;margin-right:auto;">From now on, every time you <span class="mono">git push</span>, Vercel rebuilds and updates your live site. No extra steps.</p>
+  </div>
+</section>
+
+<!-- ============ DIVIDER 4 ============ -->
+<section class="slide divider" data-sec="4">
+  <div class="slide-inner">
+    <div class="sec-num reveal">04</div>
+    <div class="sec-title reveal d1">Vibe-Code Well</div>
+    <div class="sec-sub reveal d2">Anyone can poke a chatbot. Here's how pros build with AI — fast <i>and</i> safe.</div>
+    <div class="barline"></div>
+  </div>
+</section>
+
+<!-- 17 · the harness -->
+<section class="slide" data-sec="4">
+  <div class="slide-inner">
+    <span class="kicker reveal">The big idea</span>
+    <h2 class="title-l reveal d1">Pros build a <span class="gradient-text">harness</span> around the AI</h2>
+    <div class="row mt26" style="align-items:center;">
+      <div class="reveal d2" style="flex:1;min-width:260px;">
+        <div class="big-emoji">🏎️</div>
+        <p class="body-lg mt18">Your app is the <b style="color:var(--text)">race car</b>. The <b class="gradient-text">harness</b> is the safety gear + the pit crew around it — tests, memory, guardrails, a reviewer.</p>
+      </div>
+      <div class="card reveal d3" style="flex:1;min-width:260px;">
+        <p class="body-md">Without a harness, going fast means crashing. With one, you can let AI move <b style="color:var(--text)">fast</b> and still stay <b style="color:var(--text)">safe</b>. The next slides are your harness.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 18 · rig / docs -->
+<section class="slide" data-sec="4">
+  <div class="slide-inner">
+    <span class="kicker reveal">Set up your rig</span>
+    <h2 class="title-l reveal d1">Give your project a <span class="gradient-text">/docs</span> brain</h2>
+    <p class="body-md reveal d2 mt10">Remember the three memories? This is the <b style="color:var(--text)">long-term</b> one — a folder the AI reads before it works. Four kinds of notes:</p>
+    <div class="row mt26">
+      <div class="card reveal d3" style="flex:1;min-width:180px;"><div class="tag">specs</div><h3 class="title-s mt10">What</h3><p class="body-md mt10">What you're building &amp; what "done" means.</p></div>
+      <div class="card reveal d4" style="flex:1;min-width:180px;"><div class="tag">plans</div><h3 class="title-s mt10">Steps</h3><p class="body-md mt10">The ordered steps to get there.</p></div>
+      <div class="card reveal d5" style="flex:1;min-width:180px;"><div class="tag">decisions</div><h3 class="title-s mt10">Why</h3><p class="body-md mt10">Why you chose X over Y — so you don't re-argue it.</p></div>
+      <div class="card reveal d6" style="flex:1;min-width:180px;"><div class="tag">lessons</div><h3 class="title-s mt10">Learned</h3><p class="body-md mt10">Things that broke &amp; the rule to not repeat them.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 19 · spec is a contract -->
+<section class="slide" data-sec="4">
+  <div class="slide-inner center">
+    <span class="kicker reveal">Rule #1</span>
+    <h2 class="title-xl reveal d1">A spec is a <span class="gradient-text">contract</span>,<br>not vibes</h2>
+    <p class="body-lg reveal d2 mt18" style="margin-left:auto;margin-right:auto;">Before the AI writes anything, write one clear paragraph: <b style="color:var(--text)">what are we building, and what does "done" look like?</b></p>
+    <div class="card reveal d3 mt26" style="max-width:760px;margin-left:auto;margin-right:auto;text-align:left;">
+      <div class="tag">Example spec</div>
+      <p class="body-md mt10">"A one-page site with my name, three things I like, and a button that changes the background color. <b style="color:var(--text)">Done =</b> it loads on my phone, the button works, and it's live on Vercel."</p>
+    </div>
+    <p class="body-md reveal d4 mt18">If you can't say when it's done, neither can the AI.</p>
+  </div>
+</section>
+
+<!-- 20 · the loop + DOER/CHECKER -->
+<section class="slide" data-sec="4">
+  <div class="slide-inner">
+    <span class="kicker reveal">The loop</span>
+    <h2 class="title-l reveal d1">The loop every pro runs</h2>
+    <div class="loopwrap reveal d2 mt18">
+      <div class="ring">
+        <svg viewBox="0 0 300 300">
+          <defs><linearGradient id="loopgrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#38BDF8"/><stop offset="0.55" stop-color="#A78BFA"/><stop offset="1" stop-color="#FBBF24"/>
+          </linearGradient></defs>
+          <circle class="track" cx="150" cy="150" r="132"/>
+          <circle class="prog" cx="150" cy="150" r="132"/>
+        </svg>
+        <div class="step" style="left:50%;top:8%"><div class="si">💡</div><div class="st">Brainstorm</div></div>
+        <div class="step" style="left:83%;top:26%"><div class="si">📄</div><div class="st">Spec</div></div>
+        <div class="step" style="left:92%;top:63%"><div class="si">🗺️</div><div class="st">Plan</div></div>
+        <div class="step" style="left:68%;top:90%"><div class="si">🔨</div><div class="st">Build</div></div>
+        <div class="step" style="left:32%;top:90%"><div class="si">🔎</div><div class="st">Review</div></div>
+        <div class="step" style="left:8%;top:63%"><div class="si">✅</div><div class="st">Test</div></div>
+        <div class="step" style="left:17%;top:26%"><div class="si">🚀</div><div class="st">Ship</div></div>
+        <div class="center"><div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-family:'JetBrains Mono',monospace">the</div><div class="title-s gradient-text">Build Loop</div></div>
+      </div>
+      <div class="dc-legend">
+        <div class="dc-pill doer"><div class="dce">🔨</div><div><b style="color:var(--text)">DOER</b><div class="body-md">Brainstorm · Build — the work gets made.</div></div></div>
+        <div class="dc-pill checker"><div class="dce">🔎</div><div><b style="color:var(--text)">CHECKER</b><div class="body-md">Review · Test — proof it's right.</div></div></div>
+        <p class="body-md" style="max-width:260px">Every good build has <b style="color:var(--text)">both.</b> With AI, you set up the doer <i>and</i> the checker.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 22 · lessons -->
+<section class="slide" data-sec="4">
+  <div class="slide-inner">
+    <span class="kicker reveal">Teach it from mistakes</span>
+    <h2 class="title-l reveal d1">The <span class="gradient-text">lesson</span> habit</h2>
+    <p class="body-lg reveal d2 mt18">When something breaks, don't just fix it — <b style="color:var(--text)">write down the lesson</b> so it never happens again.</p>
+    <div class="card reveal d3 mt26" style="max-width:820px;">
+      <div class="row" style="gap:24px;">
+        <div style="flex:1;min-width:140px;"><div class="tag" style="color:var(--rose);border-color:rgba(251,113,133,.3)">Symptom</div><p class="body-md mt10">The button did nothing on my phone.</p></div>
+        <div style="flex:1;min-width:140px;"><div class="tag">Root cause</div><p class="body-md mt10">I forgot to push before checking the live link.</p></div>
+        <div style="flex:1;min-width:140px;"><div class="tag" style="color:var(--emerald);border-color:rgba(52,211,153,.3)">Rule</div><p class="body-md mt10">Always <span class="mono">git push</span>, then test the live URL.</p></div>
+      </div>
+    </div>
+    <p class="body-md reveal d4 mt18">Add-only. Your list of lessons is how you (and the AI) get smarter over time.</p>
+  </div>
+</section>
+
+<!-- 23 · reviewer -->
+<section class="slide" data-sec="4">
+  <div class="slide-inner">
+    <span class="kicker reveal">The checker</span>
+    <h2 class="title-l reveal d1">Get a <span class="gradient-text">reviewer with teeth</span></h2>
+    <div class="row mt26" style="align-items:center;">
+      <div class="reveal d2" style="flex:1;min-width:260px;">
+        <div class="big-emoji">🥷</div>
+        <p class="body-lg mt18">Before you ship, have a <b style="color:var(--text)">second AI</b> whose only job is to <b class="warm-text">attack your change</b> and try to find what's wrong.</p>
+      </div>
+      <div class="reveal d3" style="flex:1;min-width:260px;">
+        <div class="row">
+          <div class="card" style="flex:1;border-color:rgba(52,211,153,0.4)"><div class="big-emoji">✅</div><h3 class="title-s mt10 green-text">APPROVE</h3><p class="body-md mt10">Nothing wrong found → ship it.</p></div>
+          <div class="card" style="flex:1;border-color:rgba(251,113,133,0.4)"><div class="big-emoji">⛔</div><h3 class="title-s mt10" style="color:var(--rose)">BLOCK</h3><p class="body-md mt10">Here's the bug → fix, then re-check.</p></div>
+        </div>
+        <p class="body-md mt18">Rule: <b style="color:var(--text)">never approve out of politeness.</b> The checker's whole value is being tough.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 24 · prove it works -->
+<section class="slide" data-sec="4">
+  <div class="slide-inner center">
+    <span class="kicker reveal">Prove it</span>
+    <h2 class="title-xl reveal d1">Ask the AI to <span class="green-text">write tests</span> and show they pass</h2>
+    <p class="body-lg reveal d2 mt18" style="margin-left:auto;margin-right:auto;">A test is a tiny robot that checks "does the important thing still work?" — automatically, every time.</p>
+    <div class="card reveal d3 mt26" style="max-width:640px;margin-left:auto;margin-right:auto;">
+      <div class="big-emoji">🚦</div>
+      <p class="body-md mt10"><b style="color:var(--text)">If the smoke test is red, don't ship.</b> "Done" means the tests are green — not "it looked fine when I tried it once."</p>
+    </div>
+  </div>
+</section>
+
+<!-- 25 · model routing -->
+<section class="slide" data-sec="4">
+  <div class="slide-inner">
+    <span class="kicker reveal">Pro nugget</span>
+    <h2 class="title-l reveal d1">Right <span class="gradient-text">brain</span> for the job</h2>
+    <p class="body-md reveal d2 mt10">AI models come in tiers. Spend the smart one where being wrong is costly; use the fast one for busywork.</p>
+    <div class="row mt26">
+      <div class="card reveal d3" style="flex:1;min-width:200px;border-color:rgba(251,191,36,0.4)"><div class="big-emoji">💎</div><h3 class="title-s mt10">Premium brain</h3><p class="body-md mt10">The reviewer, and genuinely hard calls. Rare but worth it.</p></div>
+      <div class="card reveal d4" style="flex:1;min-width:200px;border-color:rgba(56,189,248,0.4)"><div class="big-emoji">🔧</div><h3 class="title-s mt10">Workhorse</h3><p class="body-md mt10">Your normal building, debugging, planning. The default.</p></div>
+      <div class="card reveal d5" style="flex:1;min-width:200px;"><div class="big-emoji">⚡</div><h3 class="title-s mt10">Fast &amp; cheap</h3><p class="body-md mt10">Grunt work — searching, formatting, bulk edits.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 26 · cursor best practices -->
+<section class="slide" data-sec="4">
+  <div class="slide-inner">
+    <span class="kicker reveal">Cursor best practices</span>
+    <h2 class="title-l reveal d1">Four habits that make AI <span class="gradient-text">actually good</span></h2>
+    <ul class="list-clean reveal d2 mt26" style="max-width:860px;">
+      <li><span class="b">🎯</span><span><b style="color:var(--text)">Small asks.</b> One change at a time beats "build my whole app." Easier to check, easier to fix.</span></li>
+      <li><span class="b">👀</span><span><b style="color:var(--text)">Read the diff before you save.</b> See exactly what changed. Don't blind-accept.</span></li>
+      <li><span class="b">🧼</span><span><b style="color:var(--text)">Keep it simple.</b> If the AI over-complicates, say "simpler." Simple code = fewer bugs.</span></li>
+      <li><span class="b">💾</span><span><b style="color:var(--text)">Commit when it works.</b> A working version saved is a version you can always fall back to.</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ DIVIDER 5 ============ -->
+<section class="slide divider" data-sec="5">
+  <div class="slide-inner">
+    <div class="sec-num reveal">05</div>
+    <div class="sec-title reveal d1">Deploy &amp; Verify</div>
+    <div class="sec-sub reveal d2">Put it on the internet — and prove it works for real.</div>
+    <div class="barline"></div>
+  </div>
+</section>
+
+<!-- 27 · deploy -->
+<section class="slide" data-sec="5">
+  <div class="slide-inner center">
+    <span class="kicker reveal">Ship it</span>
+    <h2 class="title-l reveal d1">Deploy to <span class="gradient-text">Vercel</span></h2>
+    <div class="k2g reveal d2 mt34" style="gap:0;">
+      <div class="k2node"><div class="ke">💾</div><div class="kn">git push</div><div class="kj">you save</div></div>
+      <div class="k2wire w1"><span class="glow"></span></div>
+      <div class="k2node"><div class="ke">🚀</div><div class="kn">Vercel builds</div><div class="kj">automatic</div></div>
+      <div class="k2wire w2"><span class="glow"></span></div>
+      <div class="k2node" style="border-color:rgba(52,211,153,0.4)"><div class="ke">🔗</div><div class="kn">Live link</div><div class="kj">share it</div></div>
+    </div>
+    <p class="body-md reveal d3 mt34" style="margin-left:auto;margin-right:auto;">Push your code, and Vercel does the rest. In under a minute you have a real web address.</p>
+  </div>
+</section>
+
+<!-- 28 · preview vs prod -->
+<section class="slide" data-sec="5">
+  <div class="slide-inner">
+    <span class="kicker reveal">The pro flow</span>
+    <h2 class="title-l reveal d1">Preview vs <span class="gradient-text">Production</span></h2>
+    <div class="row mt26">
+      <div class="card reveal d2" style="flex:1;min-width:260px;border-color:rgba(56,189,248,0.4)">
+        <div class="tag">every branch</div><h3 class="title-s mt10">🔍 Preview</h3>
+        <p class="body-md mt10">Try a new idea on a <b style="color:var(--text)">branch</b> → Vercel gives it its own private link. Break stuff safely. Nobody sees it but you.</p>
+      </div>
+      <div class="card reveal d3" style="flex:1;min-width:260px;border-color:rgba(52,211,153,0.4)">
+        <div class="tag" style="color:var(--emerald);border-color:rgba(52,211,153,.3)">main branch</div><h3 class="title-s mt10">🌍 Production</h3>
+        <p class="body-md mt10">When it's good, merge to <span class="mono">main</span> → that's your <b style="color:var(--text)">real, live site.</b> Like publishing your Roblox game for the world.</p>
+      </div>
+    </div>
+    <p class="body-lg reveal d4 mt26 center" style="margin-left:auto;margin-right:auto;">The AI can get a branch green and reviewed — but <b class="gradient-text">the deploy is always your decision.</b> You ship.</p>
+  </div>
+</section>
+
+<!-- 29 · verify -->
+<section class="slide" data-sec="5">
+  <div class="slide-inner center">
+    <span class="kicker reveal">Verify</span>
+    <h2 class="title-xl reveal d1">Open it on your <span class="gradient-text">phone.</span> Share it.</h2>
+    <div class="reveal d2 mt26" style="display:flex;justify-content:center;gap:22px;flex-wrap:wrap;">
+      <div class="phone" style="width:120px;height:170px;"><div class="screen" style="font-size:38px;">✨</div></div>
+    </div>
+    <p class="body-lg reveal d3 mt26" style="margin-left:auto;margin-right:auto;">It loads. The button works. A friend can open your link right now.</p>
+    <h3 class="title-m reveal d4 mt18 gradient-text">You are now a Builder.</h3>
+  </div>
+</section>
+
+<!-- ============ DIVIDER 6 ============ -->
+<section class="slide divider" data-sec="6">
+  <div class="slide-inner">
+    <div class="sec-num reveal">06</div>
+    <div class="sec-title reveal d1">Bonus</div>
+    <div class="sec-sub reveal d2">Where this goes next — the frontier you just stepped onto.</div>
+    <div class="barline"></div>
+  </div>
+</section>
+
+<!-- 30 · waves -->
+<section class="slide" data-sec="6">
+  <div class="slide-inner center">
+    <span class="kicker reveal">Level up</span>
+    <h2 class="title-l reveal d1">Waves 🌊 — many AI builders at <span class="gradient-text">once</span></h2>
+    <p class="body-lg reveal d2 mt18" style="margin-left:auto;margin-right:auto;">Once you're good, launch <b style="color:var(--text)">several AI agents in parallel</b> — each at its own "desk," building a different feature, each one reviewed before it lands.</p>
+    <div class="row reveal d3 mt26" style="justify-content:center;">
+      <div class="card" style="width:170px"><div class="big-emoji">🖥️</div><p class="body-md mt10">Agent 1<br>login page</p></div>
+      <div class="card" style="width:170px"><div class="big-emoji">🖥️</div><p class="body-md mt10">Agent 2<br>profile</p></div>
+      <div class="card" style="width:170px"><div class="big-emoji">🖥️</div><p class="body-md mt10">Agent 3<br>chat</p></div>
+    </div>
+    <p class="body-md reveal d4 mt18">Start with 3. Each still passes the reviewer + tests. Parallelism changes how work gets <i>done</i>, not how it gets <i>approved.</i></p>
+  </div>
+</section>
+
+<!-- 31 · self-heal + goal loops -->
+<section class="slide" data-sec="6">
+  <div class="slide-inner">
+    <span class="kicker reveal">The frontier</span>
+    <h2 class="title-l reveal d1">Self-healing builds &amp; <span class="gradient-text">goal loops</span></h2>
+    <div class="row mt26">
+      <div class="card reveal d2" style="flex:1;min-width:260px;">
+        <div class="big-emoji">🩹</div><h3 class="title-s mt10">Self-healing CI</h3>
+        <p class="body-md mt10">When the build breaks, the AI <b style="color:var(--text)">fixes its own broken build</b> — automatically, a few tries — until it's green again.</p>
+      </div>
+      <div class="card reveal d3" style="flex:1;min-width:260px;">
+        <div class="big-emoji">🎯</div><h3 class="title-s mt10">Goal loops</h3>
+        <p class="body-md mt10">You state what <b style="color:var(--text)">"done"</b> looks like; the AI works until a <b style="color:var(--text)">checker</b> agrees it's met — then stops. The shift from <i>prompting</i> to <i>designing loops.</i></p>
+      </div>
+    </div>
+    <p class="body-md reveal d4 mt26 center" style="margin-left:auto;margin-right:auto;">There it is again — <b class="gradient-text">DOER vs CHECKER.</b> Always cap a loop so it can't run away.</p>
+  </div>
+</section>
+
+<!-- 32 · roblox bonus -->
+<section class="slide" data-sec="6">
+  <div class="slide-inner">
+    <span class="kicker reveal">Bonus track</span>
+    <h2 class="title-l reveal d1">Build <span class="gradient-text">games</span> too 🎮</h2>
+    <p class="body-md reveal d2 mt10">You started in game worlds — <b style="color:var(--text)">now you can build both.</b> Code in Cursor with AI, live-sync into <b style="color:var(--text)">Roblox Studio</b> with Rojo, and let the AI see your whole live game with an MCP.</p>
+    <div class="row mt26">
+      <div class="card reveal d3" style="flex:1;min-width:170px;"><div class="emoji-chip">🤖</div><h3 class="title-s mt18">Cursor</h3><p class="body-md mt10">Write Luau with AI.</p></div>
+      <div class="card reveal d4" style="flex:1;min-width:170px;"><div class="emoji-chip">🔗</div><h3 class="title-s mt18">Rojo</h3><p class="body-md mt10">Live-sync files into Studio.</p></div>
+      <div class="card reveal d5" style="flex:1;min-width:170px;"><div class="emoji-chip">🏗️</div><h3 class="title-s mt18">Studio</h3><p class="body-md mt10">Build the world, press Play, publish.</p></div>
+      <div class="card reveal d6" style="flex:1;min-width:170px;"><div class="emoji-chip">🛰️</div><h3 class="title-s mt18">MCP</h3><p class="body-md mt10">AI reads your live game.</p></div>
+    </div>
+    <p class="body-md reveal d7 mt18"><span class="tag">Full guide</span> &nbsp; <span class="mono hl-cyan">charlesb777.github.io/roblox_dev</span></p>
+  </div>
+</section>
+
+<!-- 33 · closing -->
+<section class="slide" data-sec="6">
+  <div class="slide-inner center">
+    <div class="reveal"><span class="kicker">The end · the beginning</span></div>
+    <h2 class="title-xxl reveal d1">Build <span class="gradient-text">anything.</span></h2>
+    <p class="body-lg reveal d2 mt18" style="margin-left:auto;margin-right:auto;">You installed the tools. You shipped a real app. You learned the loop the pros use.<br>You built worlds in a game — <b style="color:var(--text)">now you build in the real one.</b></p>
+    <div class="reveal d3 mt26" style="display:flex;gap:24px;justify-content:center;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);">
+      <span>Spec → Build → Review → Test → Ship</span>
+    </div>
+  </div>
+</section>
+
+</div><!-- /deck -->
+
+<div class="deck-controls">
+  <button class="ctrl-btn" id="prev">‹</button>
+  <div class="dot-strip" id="dots"></div>
+  <button class="ctrl-btn" id="next">›</button>
+</div>
+<div class="key-hint"><kbd>←</kbd><kbd>→</kbd> navigate · <kbd>F</kbd> fullscreen</div>
+
+<script>
+const slides=[...document.querySelectorAll('.slide')];
+const dots=document.getElementById('dots');
+const sections=[
+  {n:'00',t:'Overview'},{n:'01',t:'Fundamentals'},{n:'02',t:'Coding'},
+  {n:'03',t:'Setup'},{n:'04',t:'Vibe-Code'},{n:'05',t:'Deploy'},{n:'06',t:'Bonus'}
+];
+let cur=0;
+document.getElementById('tot').textContent=String(slides.length).padStart(2,'0');
+
+// build progress segments
+const pg=document.getElementById('progress');
+sections.forEach((s,i)=>{
+  const el=document.createElement('div');
+  el.className='pseg';el.dataset.sec=i;
+  el.innerHTML=`<span class="pdot"></span><span class="plabel">${s.n} ${s.t}</span>`;
+  pg.appendChild(el);
+});
+const psegs=[...document.querySelectorAll('.pseg')];
+
+// build dots
+slides.forEach((_,i)=>{
+  const d=document.createElement('div');d.className='dot';d.dataset.i=i;
+  d.onclick=()=>go(i);dots.appendChild(d);
+});
+const dotEls=[...document.querySelectorAll('.dot-strip .dot')];
+
+function go(i){
+  i=Math.max(0,Math.min(slides.length-1,i));
+  slides[cur].classList.remove('active');
+  dotEls[cur].classList.remove('active');
+  cur=i;
+  slides[cur].classList.add('active');
+  dotEls[cur].classList.add('active');
+  dotEls[cur].scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+  document.getElementById('cur').textContent=String(i+1).padStart(2,'0');
+  const sec=+slides[cur].dataset.sec;
+  psegs.forEach(p=>p.classList.toggle('on',+p.dataset.sec===sec));
+}
+function next(){go(cur+1)} function prev(){go(cur-1)}
+document.getElementById('next').onclick=next;
+document.getElementById('prev').onclick=prev;
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();next();}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();prev();}
+  else if(e.key==='Home'){go(0);} else if(e.key==='End'){go(slides.length-1);}
+  else if(e.key==='f'||e.key==='F'){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+});
+// swipe
+let sx=0;
+document.addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});
+document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>50){dx<0?next():prev();}},{passive:true});
+go(0);
+</script>
+</body>
+</html>
