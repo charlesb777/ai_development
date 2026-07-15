@@ -149,6 +149,19 @@ h1,h2,h3,h4{font-family:'Outfit',sans-serif;letter-spacing:-0.03em;font-weight:8
 .slide.active .answer-badge{animation:answerglow 2s ease-in-out infinite;}
 @keyframes answerglow{0%,100%{filter:drop-shadow(0 0 0px rgba(52,211,153,0))}50%{filter:drop-shadow(0 0 16px rgba(52,211,153,.6))}}
 
+/* --- HOOK BAND (slide 5) --- */
+.hookband{margin:20px auto 0;max-width:1140px;border:1px solid rgba(56,189,248,0.35);border-radius:20px;padding:16px 24px;background:linear-gradient(135deg,rgba(56,189,248,0.12),rgba(167,139,250,0.09) 55%,rgba(251,191,36,0.09));box-shadow:0 0 44px rgba(56,189,248,0.14);display:flex;align-items:center;justify-content:center;gap:14px 26px;flex-wrap:wrap;}
+.hook-text{font-family:'Outfit',sans-serif;font-weight:800;font-size:clamp(18px,1.9vw,26px);letter-spacing:-0.02em;line-height:1.15;}
+.hook-outs{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.hout{font-family:'Inter',sans-serif;font-weight:600;font-size:clamp(13px,1.1vw,15px);padding:8px 15px;border-radius:100px;background:rgba(255,255,255,0.04);border:1px solid var(--border-2);white-space:nowrap;}
+.hout.a{border-color:rgba(56,189,248,0.55);color:#bfe9ff}
+.hout.b{border-color:rgba(167,139,250,0.55);color:#d9ccff}
+.hout.c{border-color:rgba(251,191,36,0.55);color:#ffe8ad}
+.hout.d{border-color:rgba(52,211,153,0.55);color:#b9f3dc}
+.slide.active .hout{animation:houtpop .55s var(--easing) both;}
+.slide.active .hout:nth-child(1){animation-delay:.6s}.slide.active .hout:nth-child(2){animation-delay:.75s}.slide.active .hout:nth-child(3){animation-delay:.9s}.slide.active .hout:nth-child(4){animation-delay:1.05s}
+@keyframes houtpop{from{opacity:0;transform:translateY(8px) scale(.9)}to{opacity:1;transform:none}}
+
 /* --- SYSTEMS (slide 6) --- */
 .sysmap{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;}
 .sysnode{width:150px;height:150px;border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;background:linear-gradient(160deg,rgba(21,30,50,0.8),rgba(11,16,30,0.6));border:1px solid var(--border-2);position:relative;}
@@ -320,8 +333,8 @@ h1,h2,h3,h4{font-family:'Outfit',sans-serif;letter-spacing:-0.03em;font-weight:8
 <section class="slide" data-sec="0">
   <div class="slide-inner">
     <span class="kicker reveal">How AI works</span>
-    <h2 class="title-l reveal d1">An LLM is a giant <span class="gradient-text">math machine</span> that turns words into more words</h2>
-    <div class="pipe reveal d2 mt26">
+    <h2 class="title-m reveal d1">An LLM is a giant <span class="gradient-text">math machine</span> that just turns words into more words</h2>
+    <div class="pipe reveal d2 mt18">
       <div class="pstage">
         <div class="plab">1 · Learn</div>
         <div class="big-emoji">📚</div>
@@ -349,7 +362,13 @@ h1,h2,h3,h4{font-family:'Outfit',sans-serif;letter-spacing:-0.03em;font-weight:8
         <div class="pdesc">Out comes the <b class="green-text">most likely next words</b> — your answer.</div>
       </div>
     </div>
-    <p class="body-md reveal d4 mt18 center" style="margin-left:auto;margin-right:auto;">Tokens are the <b style="color:var(--text)">LEGO bricks of language</b>. The layers are a <b style="color:var(--text)">factory conveyor</b> where the answer takes shape. No magic — just a <b class="gradient-text">lot</b> of math.</p>
+    <div class="hookband reveal d4">
+      <div class="hook-text">But those "more words" are <span class="gradient-text">instructions</span> — and instructions build <span class="warm-text">anything</span>:</div>
+      <div class="hook-outs">
+        <span class="hout a">📱 apps</span><span class="hout b">🤖 robot code</span><span class="hout c">🎬 videos</span><span class="hout d">🖼️ images</span>
+      </div>
+    </div>
+    <p class="body-sm reveal d5 mt10 center" style="color:var(--dim);margin-left:auto;margin-right:auto;">Words in → words out — but those words can be code, the steps to move a robot, or the recipe for a picture or video.</p>
   </div>
 </section>
 
