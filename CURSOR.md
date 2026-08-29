@@ -1,119 +1,133 @@
-# CURSOR.md — the rules file
+# Set up my coding harness
 
-Cursor reads this before it writes anything. It's the "long-term memory" from the deck:
-you write the workflow down **once**, and the AI follows it every time without being asked.
+## 👋 Start here
 
-**Where to put it:**
+1. Open your project in **Cursor**.
+2. Drag this file into the chat — or copy and paste the whole thing.
+3. Type: **"Set this up for me."**
+4. It will ask you a few questions. Answer them.
+5. When it's done, read the `AGENTS.md` it made. That file is your project's rules.
 
-| Tool | File |
-|---|---|
-| Cursor | `.cursor/rules/main.mdc` — or `.cursorrules` in the project root |
-| Claude Code | `CLAUDE.md` in the project root |
-
-Both are just markdown. Copy this file, delete what doesn't apply, and **replace every
-`<< ... >>` with your own project's answer.** The parts in `<< >>` are the only bits you have
-to write yourself.
+That's it. Everything below is for the AI, not for you.
 
 ---
 
-## 1. What this project is
+You are setting up a "coding harness" for this project — the rules, docs and checks that make
+you (the AI) reliable to work with. Do the following in order.
 
-<< One or two sentences. What are you building, and who for?
-   Example: "A web app where you log the books you've read and see stats about them.
-   Just for me and my friends." >>
+## Step 1 — Ask me these first
 
-**Stack:** << e.g. Next.js + TypeScript, or SwiftUI + iOS 18, or plain HTML/CSS/JS >>
+Don't guess. Ask me all of these in one message, wait for my answers, then continue:
 
----
+1. What are we building, in one or two sentences? Who is it for?
+2. What's the tech stack?
+3. What command runs the tests? What command type-checks or builds? (If there isn't one yet,
+   say so — we'll add it.)
+4. Is there anything you must **never** touch or change without asking me first?
 
-## 2. Read these before you write code
+## Step 2 — Create the docs folders
 
-Docs live in `docs/`. Read the relevant one **first** — don't guess.
+Make these, each with a short starter file explaining what belongs in it:
 
-| Folder | What's in it | Read it when |
-|---|---|---|
-| `docs/architecture/` | How the pieces fit together. | Changing how parts connect |
-| `docs/data-model/` | What you store, and how it's shaped. | **Before** touching the database — always |
-| `docs/adr/` | Decisions, and **why** | About to change something structural |
-| `docs/specs/` | What we're building, and what "done" means | Starting any new feature |
+```
+docs/
+  architecture/   how the pieces fit together
+  data-model/     what we store and how it's shaped
+  adr/            decisions, and WHY — so nobody re-argues them
+  specs/          what we're building, and what "done" means
+  lessons.md      things that broke, and the rule so it doesn't happen twice
+```
 
-**Rule:** if you change the data model, update `docs/data-model/` **in the same change.**
-A doc that's wrong is worse than no doc.
+Fill `docs/architecture/overview.md` and `docs/data-model/overview.md` with what you can
+actually tell from the code right now. If the project is empty, write "nothing here yet —
+fill this in when we build the first feature" rather than inventing an architecture.
 
----
+## Step 3 — Write `AGENTS.md` in the project root
 
-## 3. How to work
+**Use the filename `AGENTS.md`.** Cursor reads it automatically, and so do most other coding
+agents. (Cursor does *not* read `CLAUDE.md`.)
 
-- **Small asks.** One change at a time. Don't rewrite three files when one will do.
-- **Ask before big moves.** If the change touches the database, deletes data, costs money, or
-  can't be undone — stop and ask first.
-- **Say what you did.** Plain language, at the end. What changed, what you tested, what you're
-  unsure about.
-- **Don't guess.** If the spec doesn't say, ask. A confident wrong answer is worse than a question.
+Write it in plain language — a 12-year-old should understand every line. Include:
 
----
+**What this project is** — from my answers in Step 1.
 
-## 4. Tests
+**Read before you write.** Point at the four `docs/` folders and say when each matters. Include
+this rule word for word:
 
-- **Write tests in the same change as the code.** Not later, not "at the end."
-- Tests live **next to the code they test** — not in the CI file.
+> Read `docs/data-model/` **before** touching anything that stores data. If you change what we
+> store, update that doc **in the same change.** A doc that's wrong is worse than no doc.
+
+**How to work:**
+- One change at a time. Don't rewrite three files when one will do.
+- Stop and ask before anything that deletes data, costs money, or can't be undone.
+- Say what you did in plain language at the end: what changed, what you ran, what you're unsure of.
+- If the spec doesn't say, ask. A confident wrong answer is worse than a question.
+
+**Tests:**
+- Write the test in the **same change** as the code. Not later.
+- Tests go **next to the code they test.**
 - **A test you haven't broken is not a test.** After writing one, break the code on purpose and
-  make sure it goes red. If it still passes, it's decoration — say so and fix it.
-- Before you say something is done: run << your test command, e.g. `npm test` >>, and
-  << your typecheck command, e.g. `npm run typecheck` >>. Both green, or it isn't done.
+  confirm it goes red. If it still passes, say so and fix the test.
+- Nothing is "done" until the test command and the type-check command are both green. Run them.
+  Don't claim they passed without running them.
 
----
-
-## 5. Before opening a PR
-
-1. Tests green, typecheck green, lint green.
-2. Ask the **reviewer** to look at the diff. Fix what it blocks on.
-3. Then push.
-
-Never merge your own work straight to `main` without CI passing.
-
----
-
-## 6. Which model to use
-
-Three tiers. Don't use the expensive one for everything.
-
-| Tier | Use it for |
-|---|---|
-| 💎 **Premium** | The reviewer. Genuinely hard design calls. When you're stuck. ~5% of the time. |
-| 🔧 **Workhorse** | Normal building, debugging, writing code. **The default.** |
-| ⚡ **Fast & cheap** | Searching, formatting, renaming, bulk edits. |
-
-**Where it's set:**
-
-- **Sub-agents** — pinned in the agent's own file. Automatic.
-- **Your main session** — *you* pick it. A rules file can't force it. Cursor: the model picker.
-  Claude Code: `/model`.
-- **Anything you say out loud wins.** "Use the cheap model for this" overrides all of the above.
-
-**Tell me when to switch.** If I'm about to do deep design work on the workhorse model, say:
-*"this is deep design work — consider switching to the premium model."*
-
----
-
-## 7. Never do this
-
-<< Your own list. Some starters — keep what applies, add your own: >>
-
-- Never commit secrets, API keys, or `.env` files.
+**Never:**
+- Never commit secrets, API keys or `.env` files.
 - Never delete data without asking.
-- Never weaken or delete a test to make a build pass. Fix the code.
-- Never claim something works if you didn't run it.
-- << your project's own rule — e.g. "never change the login flow without asking" >>
+- Never weaken or delete a test to make a build pass — fix the code.
+- Never say something works if you didn't run it.
+- Plus whatever I told you in Step 1, question 4.
+
+**Lessons:** when something breaks in a non-obvious way, append one line to `docs/lessons.md`:
+`date — what broke → why → the rule so it doesn't happen again`.
+
+## Step 4 — Set up the reviewer
+
+The reviewer is a second pass whose **only** job is to find what's wrong. It never edits — it
+only reports. Create `.cursor/rules/reviewer.mdc` containing:
+
+- **When to run it:** before opening a pull request, and any time I say "review this."
+- **What it sees:** the diff and the spec. Nothing else — judge the change, not the intention.
+- **What to hunt, in order:**
+  1. Things the spec promised that the change doesn't actually do.
+  2. Tests that were weakened, deleted, or written so they pass no matter what.
+  3. Security: secrets in the code, missing permission checks, anything a stranger could abuse.
+  4. Bugs and edge cases: empty states, errors, null/undefined.
+  5. Docs that no longer match the code.
+- **Output:** start with **APPROVE** or **BLOCK**. If BLOCK, list each problem with the file and
+  line, and a concrete example of how it fails — not a vague worry.
+- **Never approve to be polite.** An empty list must mean you genuinely looked and found nothing.
+
+## Step 5 — Make the reviewer actually fire
+
+Add this to `AGENTS.md`, word for word, under a heading "Before a PR":
+
+> **When I ask you to open a pull request, run the reviewer FIRST.**
+> Show me its verdict before you push. If it says BLOCK, fix what it found and review again.
+> Do not open the PR on a BLOCK without telling me.
+>
+> Also: tests, type-check and lint must all be green before the PR exists. Run them and show me.
+
+This is the step people skip. A reviewer nobody triggers is decoration.
+
+## Step 6 — Tell me what you did
+
+List every file you created, and show me `AGENTS.md` so I can read it. Then tell me the one
+thing about this setup you think is most likely to be ignored later — and why.
 
 ---
 
-## 8. Lessons
+## For the teacher — not part of the setup
 
-When something breaks in a way that wasn't obvious, add a line to `docs/lessons.md`:
+**Cursor can't pin a different model to the reviewer.** In Claude Code you can force the
+reviewer onto a stronger model that is *physically unable to edit files*. Cursor has no
+equivalent today — so your reviewer is the same model, in a different mindset, following a
+rule. That's genuinely weaker: it's a second opinion, not an independent one. Useful, but don't
+mistake it for a gate.
 
-```
-2026-08-29 — what broke → why it happened → the rule so it doesn't happen again
-```
+**The only unskippable gate is CI.** Everything above is a rule, and rules get skipped — by
+you, and by the AI. CI runs on every push whether anyone remembers or not. If you only set up
+one thing, set up CI.
 
-The point isn't the record. It's that next time, the AI reads it first.
+**Pick the model yourself.** Cheap model for searching and renaming, best model for reviewing
+and hard design calls. No file can choose this for you — it's a button, and it's your call.
