@@ -114,20 +114,3 @@ This is the step people skip. A reviewer nobody triggers is decoration.
 
 List every file you created, and show me `AGENTS.md` so I can read it. Then tell me the one
 thing about this setup you think is most likely to be ignored later — and why.
-
----
-
-## For the teacher — not part of the setup
-
-**Cursor can't pin a different model to the reviewer.** In Claude Code you can force the
-reviewer onto a stronger model that is *physically unable to edit files*. Cursor has no
-equivalent today — so your reviewer is the same model, in a different mindset, following a
-rule. That's genuinely weaker: it's a second opinion, not an independent one. Useful, but don't
-mistake it for a gate.
-
-**The only unskippable gate is CI.** Everything above is a rule, and rules get skipped — by
-you, and by the AI. CI runs on every push whether anyone remembers or not. If you only set up
-one thing, set up CI.
-
-**Pick the model yourself.** Cheap model for searching and renaming, best model for reviewing
-and hard design calls. No file can choose this for you — it's a button, and it's your call.
