@@ -735,12 +735,18 @@ git push <span class="hl-cyan">-u</span> origin main</div>
 <section class="slide" data-sec="4">
   <div class="slide-inner center">
     <span class="kicker reveal">Prove it</span>
-    <h2 class="title-xl reveal d1">Ask the AI to <span class="green-text">write tests</span> and show they pass</h2>
-    <p class="body-lg reveal d2 mt18" style="margin-left:auto;margin-right:auto;">A test is a tiny robot that checks "does the important thing still work?" — automatically, every time.</p>
-    <div class="card reveal d3 mt26" style="max-width:640px;margin-left:auto;margin-right:auto;">
-      <div class="big-emoji">🚦</div>
-      <p class="body-md mt10"><b style="color:var(--text)">If the smoke test is red, don't ship.</b> "Done" means the tests are green — not "it looked fine when I tried it once."</p>
+    <h2 class="title-xl reveal d1">Write the test — then <span class="green-text">try to break it</span></h2>
+    <p class="body-lg reveal d2 mt18" style="margin-left:auto;margin-right:auto;">A test is a tiny robot that checks "does the important thing still work?" — automatically, every time. But a green check only counts if it could have gone red.</p>
+    <div class="row mt26">
+      <div class="card reveal d3" style="flex:1;min-width:190px;"><div class="tag">the tests</div><h3 class="title-s mt10">Next to your code</h3><p class="body-md mt10">Files that live beside the thing they test. You write them <b style="color:var(--text)">as</b> you build — not at the end.</p></div>
+      <div class="card reveal d4" style="flex:1;min-width:190px;"><div class="tag">the spec</div><h3 class="title-s mt10">What "done" means</h3><p class="body-md mt10">Each thing the spec promises becomes a test. That's how you know you built what you said.</p></div>
+      <div class="card reveal d5" style="flex:1;min-width:190px;"><div class="tag">CI</div><h3 class="title-s mt10">The robot that won't forget</h3><p class="body-md mt10">A checklist that runs every test on every push. It doesn't hold the tests — it just refuses to let you skip them.</p></div>
     </div>
+    <div class="card reveal d6 mt26" style="max-width:700px;margin-left:auto;margin-right:auto;border-color:rgba(251,113,133,0.4)">
+      <div class="big-emoji">🧪</div>
+      <p class="body-md mt10"><b style="color:var(--text)">Break your own code on purpose.</b> Delete a line, run the test. If it still says PASS, you don't have a test — you have decoration. An AI will happily write one that's green no matter what.</p>
+    </div>
+    <p class="body-md reveal d6 mt18" style="max-width:700px;margin-left:auto;margin-right:auto;">All of this lives in your <b style="color:var(--text)">rules file</b> — write the workflow down once, and the AI follows it every time without being asked.</p>
   </div>
 </section>
 
