@@ -32,11 +32,12 @@ Docs live in `docs/`. Read the relevant one **first** — don't guess.
 
 | Folder | What's in it | Read it when |
 |---|---|---|
-| `docs/architecture/` | How the pieces fit. Data models. The design. | Touching the database, or how parts connect |
+| `docs/architecture/` | How the pieces fit together. | Changing how parts connect |
+| `docs/data-model/` | What you store, and how it's shaped. | **Before** touching the database — always |
 | `docs/adr/` | Decisions, and **why** | About to change something structural |
 | `docs/specs/` | What we're building, and what "done" means | Starting any new feature |
 
-**Rule:** if you change the data model, update `docs/architecture/` **in the same change.**
+**Rule:** if you change the data model, update `docs/data-model/` **in the same change.**
 A doc that's wrong is worse than no doc.
 
 ---
